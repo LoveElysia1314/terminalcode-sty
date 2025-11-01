@@ -1,0 +1,412 @@
+% =====================================================================
+% terminalcode.sty  v0.9.0
+% Terminal-style code boxes with UTF-8 box-drawing and ANSI colors
+% (Dark/Light themes supported)
+%
+% Requirements:
+%   - Compiler: XeLaTeX or LuaLaTeX (NOT pdfLaTeX)
+%   - Packages: ctex, xcolor, tcolorbox (most), listings, fontspec, kvoptions
+%   - Fonts: DejaVu Sans Mono (recommended), Latin Modern Mono (fallback)
+%
+% License: MIT License
+%
+% Features:
+%   - termcode: inline terminal-style listing environment
+%   - terminput / termcodefileinput: external file input with same style
+%   - Full ANSI 16-color support (dark/light themes)
+%   - Package options: theme=dark|light, monofont=<fontname>
+%   - Breakable, monospace, line numbers, escapeinside=«»
+%
+% Version History:
+%   v0.9.0 (2025-11-02): Initial public release on CTAN
+%   (Earlier pre-release development)
+%
+% Documentation: See README.md for comprehensive guide
+% Example: See example.tex for working examples
+% =====================================================================
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{terminalcode}[2025/11/02 v0.9.0 Terminal-style code boxes]
+
+% ---------------------------------------------------------------------
+% Engine Detection (requires XeTeX or LuaTeX for fontspec)
+% ---------------------------------------------------------------------
+\@ifundefined{directlua}{%
+  \@ifundefined{XeTeXrevision}{%
+    \PackageError{terminalcode}{%
+      This package requires XeLaTeX or LuaLaTeX.\MessageBreak
+      pdfLaTeX is not supported due to fontspec and UTF-8 box-drawing requirements.\MessageBreak
+      Please compile with: xelatex or lualatex
+    }{Use XeLaTeX or LuaLaTeX to compile.}%
+  }{}%
+}{}
+
+% ---------------------------------------------------------------------
+% Dependencies
+% Note: ctex is required for proper UTF-8 box-drawing character handling
+%       and improved font configuration with XeLaTeX/LuaLaTeX
+% ---------------------------------------------------------------------
+\RequirePackage{ctex}
+\RequirePackage{xcolor}
+\RequirePackage[most]{tcolorbox}
+\RequirePackage{listings}
+\RequirePackage{fontspec}
+\RequirePackage{kvoptions}
+
+% =====================================================================
+% Monospace Font Configuration & Option Processing
+% File encoding: UTF-8
+% UTF-8 support required for box-drawing characters
+% Package option: monofont=<fontname> (default: DejaVu Sans Mono)
+% Package option: theme=dark|light (default: dark)
+% With fallback to Latin Modern Mono if primary font not found
+% =====================================================================
+
+% Setup key=value option handling via kvoptions
+\SetupKeyvalOptions{family=terminalcode,prefix=terminalcode@}
+\DeclareStringOption[DejaVu Sans Mono]{monofont}
+\DeclareStringOption[dark]{theme}
+\ProcessKeyvalOptions*
+
+% Fallback font (not user-configurable, internal only)
+\def\terminalcode@monofont@fallback{Latin Modern Mono}
+
+% Initial theme setting
+\newif\iftermcodelight
+\termcodelightfalse
+
+% Apply theme from option
+\def\@darkstr{dark}
+\def\@lightstr{light}
+\edef\@tempa{\terminalcode@theme}
+\ifx\@tempa\@darkstr
+  \termcodelightfalse
+\else\ifx\@tempa\@lightstr
+  \termcodelighttrue
+\else
+  \PackageWarning{terminalcode}{Unknown theme '\terminalcode@theme'. Using 'dark' (default).}%
+  \termcodelightfalse
+\fi\fi
+
+% Placeholder for font setup (will be called after option processing)
+\def\terminalcode@setup@font{%
+  \IfFontExistsTF{\terminalcode@monofont}{%
+    \setmonofont{\terminalcode@monofont}%
+  }{%
+    \IfFontExistsTF{\terminalcode@monofont@fallback}{%
+      \PackageWarning{terminalcode}{%
+        Font '\terminalcode@monofont' not found.\MessageBreak
+        Falling back to '\terminalcode@monofont@fallback'%
+      }%
+      \setmonofont{\terminalcode@monofont@fallback}%
+    }{%
+      \PackageWarning{terminalcode}{%
+        Neither '\terminalcode@monofont' nor\MessageBreak
+        '\terminalcode@monofont@fallback' found.\MessageBreak
+        Using default monospace font%
+      }%
+    }%
+  }%
+}
+
+% ---------------------------------------------------------------------
+% Listings “text” language definition
+% This disables syntax highlighting
+% ---------------------------------------------------------------------
+\lstdefinelanguage{text}{}
+
+% ---------------------------------------------------------------------
+% Color Definitions
+% Dark and Light variants included
+% ---------------------------------------------------------------------
+% ===== Terminal theme colors =====
+% Dark theme
+\definecolor{term-bg-d}{RGB}{30,30,30}
+\definecolor{term-fg-d}{RGB}{230,230,230}
+
+% Light theme
+\definecolor{term-bg-l}{RGB}{245,246,247}
+\definecolor{term-fg-l}{RGB}{50,56,58}
+
+% ===== ANSI colors (dark mode) =====
+\definecolor{ansi-30-d}{RGB}{35,38,40}     % Black (dark)
+\definecolor{ansi-31-d}{RGB}{205,75,69}    % Red
+\definecolor{ansi-32-d}{RGB}{75,183,72}    % Green
+\definecolor{ansi-33-d}{RGB}{218,165,32}   % Yellow
+\definecolor{ansi-34-d}{RGB}{72,120,200}   % Blue
+\definecolor{ansi-35-d}{RGB}{164,84,208}   % Magenta
+\definecolor{ansi-36-d}{RGB}{55,180,180}   % Cyan
+\definecolor{ansi-37-d}{RGB}{230,230,230}  % White (light gray)
+
+\definecolor{ansi-90-d}{RGB}{110,114,115}  % Bright black
+\definecolor{ansi-91-d}{RGB}{255,120,120}  % Bright red
+\definecolor{ansi-92-d}{RGB}{120,255,120}  % Bright green
+\definecolor{ansi-93-d}{RGB}{255,215,80}   % Bright yellow
+\definecolor{ansi-94-d}{RGB}{120,160,255}  % Bright blue
+\definecolor{ansi-95-d}{RGB}{215,130,255}  % Bright magenta
+\definecolor{ansi-96-d}{RGB}{120,255,255}  % Bright cyan
+\definecolor{ansi-97-d}{RGB}{255,255,255}  % Bright white
+
+% ===== ANSI colors (light mode) =====
+\definecolor{ansi-30-l}{RGB}{60,65,67}     % Black (dark)
+\definecolor{ansi-31-l}{RGB}{200,55,47}    % Red
+\definecolor{ansi-32-l}{RGB}{39,174,96}    % Green
+\definecolor{ansi-33-l}{RGB}{214,147,40}   % Yellow
+\definecolor{ansi-34-l}{RGB}{52,152,219}   % Blue
+\definecolor{ansi-35-l}{RGB}{142,68,173}   % Magenta
+\definecolor{ansi-36-l}{RGB}{26,188,156}   % Cyan
+\definecolor{ansi-37-l}{RGB}{230,230,230}  % White (light gray)
+
+\definecolor{ansi-90-l}{RGB}{120,125,126}  % Bright black (dim gray)
+\definecolor{ansi-91-l}{RGB}{255,107,107}  % Bright red
+\definecolor{ansi-92-l}{RGB}{46,204,113}   % Bright green
+\definecolor{ansi-93-l}{RGB}{241,196,15}   % Bright yellow
+\definecolor{ansi-94-l}{RGB}{93,173,226}   % Bright blue
+\definecolor{ansi-95-l}{RGB}{187,143,206}  % Bright magenta
+\definecolor{ansi-96-l}{RGB}{110,210,195}  % Bright cyan
+\definecolor{ansi-97-l}{RGB}{50,56,58}     % Bright white (text black)
+
+
+% ---------------------------------------------------------------------
+% Theme Selection
+% Package option: theme=dark|light (default: dark)
+% Or use \terminalcodetheme{dark|light} to switch after loading
+% Example: \usepackage[theme=light]{terminalcode}
+% Or: \documentclass{article} \usepackage{terminalcode} \terminalcodetheme{light}
+% Default: dark
+% =====================================================================
+
+\def\@darkstr{dark}
+\def\@lightstr{light}
+\def\terminalcode@theme{}
+
+\newcommand{\terminalcodetheme}[1]{%
+  \def\@tempa{#1}%
+  \ifx\@tempa\@darkstr
+    \termcodelightfalse
+  \else\ifx\@tempa\@lightstr
+    \termcodelighttrue
+  \else
+    \PackageError{terminalcode}{Unknown theme '#1'}{Use 'dark' or 'light'.}%
+  \fi\fi
+}
+
+\let\tctheme\terminalcodetheme
+
+% Package options (processed after \terminalcodetheme is defined)
+% Already processed above via kvoptions, no additional processing needed
+
+% Setup monospace font after option processing
+\terminalcode@setup@font
+
+% ---------------------------------------------------------------------
+% ANSI Styling Support
+% NOTE: \verb cannot be styled internally — must set global state
+% ---------------------------------------------------------------------
+\makeatletter
+
+\newcommand{\ansicolor}[1]{%
+  \if\relax\detokenize{#1}\relax\else
+    \color{ansi-#1}%
+  \fi
+}
+
+\newcommand{\ansireset}{\normalfont\color{term-fg}}
+\let\ac\ansicolor
+\makeatother
+
+% ---------------------------------------------------------------------
+% termcode Environment
+% Based on tcolorbox + listings
+% ---------------------------------------------------------------------
+\newtcblisting{termcode}[2][text]{%
+  code={%
+    \small
+    % Resolve theme colors
+    \iftermcodelight
+      \colorlet{term-bg}{term-bg-l}
+      \colorlet{term-fg}{term-fg-l}
+      \colorlet{ansi-30}{ansi-30-l}
+      \colorlet{ansi-31}{ansi-31-l}
+      \colorlet{ansi-32}{ansi-32-l}
+      \colorlet{ansi-33}{ansi-33-l}
+      \colorlet{ansi-34}{ansi-34-l}
+      \colorlet{ansi-35}{ansi-35-l}
+      \colorlet{ansi-36}{ansi-36-l}
+      \colorlet{ansi-37}{ansi-37-l}
+      \colorlet{ansi-90}{ansi-90-l}
+      \colorlet{ansi-91}{ansi-91-l}
+      \colorlet{ansi-92}{ansi-92-l}
+      \colorlet{ansi-93}{ansi-93-l}
+      \colorlet{ansi-94}{ansi-94-l}
+      \colorlet{ansi-95}{ansi-95-l}
+      \colorlet{ansi-96}{ansi-96-l}
+      \colorlet{ansi-97}{ansi-97-l}
+    \else
+      \colorlet{term-bg}{term-bg-d}
+      \colorlet{term-fg}{term-fg-d}
+      \colorlet{ansi-30}{ansi-30-d}
+      \colorlet{ansi-31}{ansi-31-d}
+      \colorlet{ansi-32}{ansi-32-d}
+      \colorlet{ansi-33}{ansi-33-d}
+      \colorlet{ansi-34}{ansi-34-d}
+      \colorlet{ansi-35}{ansi-35-d}
+      \colorlet{ansi-36}{ansi-36-d}
+      \colorlet{ansi-37}{ansi-37-d}
+      \colorlet{ansi-90}{ansi-90-d}
+      \colorlet{ansi-91}{ansi-91-d}
+      \colorlet{ansi-92}{ansi-92-d}
+      \colorlet{ansi-93}{ansi-93-d}
+      \colorlet{ansi-94}{ansi-94-d}
+      \colorlet{ansi-95}{ansi-95-d}
+      \colorlet{ansi-96}{ansi-96-d}
+      \colorlet{ansi-97}{ansi-97-d}
+    \fi
+    \def\termcode@lang{#1}%
+    \def\termcode@textstr{text}%
+  },
+  enhanced jigsaw,
+  breakable,
+  width=\textwidth,
+  left=12pt, right=12pt,
+  top=8pt, bottom=8pt,
+  before skip=12pt, after skip=12pt,
+  boxrule=0.8pt,
+  arc=3pt,
+  colframe=\iftermcodelight gray!80\else gray!60\fi,
+  colback=term-bg,
+  coltext=term-fg,
+  title=#2,
+  title after break=#2,
+  coltitle=\iftermcodelight black\else white\fi,
+  colbacktitle=\iftermcodelight gray!20\else gray!80\fi,
+  fonttitle=\ttfamily\small\bfseries,
+  toptitle=4pt, bottomtitle=4pt,
+  listing only,
+  listing engine=listings,
+  listing options={
+    language=#1,
+    basicstyle=\ttfamily\color{term-fg},
+    keywordstyle=\ifx\termcode@lang\termcode@textstr\else\color{ansi-34}\bfseries\fi,
+    commentstyle=\ifx\termcode@lang\termcode@textstr\else\color{ansi-32}\fi,
+    stringstyle=\ifx\termcode@lang\termcode@textstr\else\color{ansi-33}\fi,
+    identifierstyle=\color{term-fg},
+    breaklines=true,
+    breakatwhitespace=false,
+    columns=flexible,
+    basewidth=0.5em,
+    prebreak={}, postbreak={}, breakindent=0pt,
+    numbers=left,
+    numbersep=4pt,
+    numberstyle=\tiny\color{ansi-90},
+    tabsize=2,
+    frame=none,
+    upquote=true,
+    showspaces=false, showtabs=false, showstringspaces=false,
+    escapeinside={«}{»},
+  }
+}
+
+% ---------------------------------------------------------------------
+% \terminput[<language>]{<title>}{<filename>}
+% Fully consistent with termcode, uses tcbinputlisting to avoid nesting.
+% ---------------------------------------------------------------------
+\makeatletter
+\newcommand{\terminput}[3][text]{%
+  \begingroup
+  % Resolve theme colors (same as in termcode)
+  \iftermcodelight
+    \colorlet{term-bg}{term-bg-l}
+    \colorlet{term-fg}{term-fg-l}
+    \colorlet{ansi-30}{ansi-30-l}
+    \colorlet{ansi-31}{ansi-31-l}
+    \colorlet{ansi-32}{ansi-32-l}
+    \colorlet{ansi-33}{ansi-33-l}
+    \colorlet{ansi-34}{ansi-34-l}
+    \colorlet{ansi-35}{ansi-35-l}
+    \colorlet{ansi-36}{ansi-36-l}
+    \colorlet{ansi-37}{ansi-37-l}
+    \colorlet{ansi-90}{ansi-90-l}
+    \colorlet{ansi-91}{ansi-91-l}
+    \colorlet{ansi-92}{ansi-92-l}
+    \colorlet{ansi-93}{ansi-93-l}
+    \colorlet{ansi-94}{ansi-94-l}
+    \colorlet{ansi-95}{ansi-95-l}
+    \colorlet{ansi-96}{ansi-96-l}
+    \colorlet{ansi-97}{ansi-97-l}
+  \else
+    \colorlet{term-bg}{term-bg-d}
+    \colorlet{term-fg}{term-fg-d}
+    \colorlet{ansi-30}{ansi-30-d}
+    \colorlet{ansi-31}{ansi-31-d}
+    \colorlet{ansi-32}{ansi-32-d}
+    \colorlet{ansi-33}{ansi-33-d}
+    \colorlet{ansi-34}{ansi-34-d}
+    \colorlet{ansi-35}{ansi-35-d}
+    \colorlet{ansi-36}{ansi-36-d}
+    \colorlet{ansi-37}{ansi-37-d}
+    \colorlet{ansi-90}{ansi-90-d}
+    \colorlet{ansi-91}{ansi-91-d}
+    \colorlet{ansi-92}{ansi-92-d}
+    \colorlet{ansi-93}{ansi-93-d}
+    \colorlet{ansi-94}{ansi-94-d}
+    \colorlet{ansi-95}{ansi-95-d}
+    \colorlet{ansi-96}{ansi-96-d}
+    \colorlet{ansi-97}{ansi-97-d}
+  \fi
+
+  \def\termcode@lang{#1}%
+  \def\termcode@textstr{text}%
+
+  \tcbinputlisting{
+    enhanced jigsaw,
+    breakable,
+    width=\textwidth,
+    left=12pt, right=12pt,
+    top=8pt, bottom=8pt,
+    before skip=12pt, after skip=12pt,
+    boxrule=0.8pt,
+    arc=3pt,
+    colframe=\iftermcodelight gray!80\else gray!60\fi,
+    colback=term-bg,
+    coltext=term-fg,
+    title={#2},
+    title after break={#2},
+    coltitle=\iftermcodelight black\else white\fi,
+    colbacktitle=\iftermcodelight gray!20\else gray!80\fi,
+    fonttitle=\ttfamily\small\bfseries,
+    toptitle=4pt, bottomtitle=4pt,
+    listing only,
+    listing engine=listings,
+    listing options={
+      language=#1,
+      basicstyle=\ttfamily\color{term-fg}\small,
+      keywordstyle=\ifx\termcode@lang\termcode@textstr\else\bfseries\color{ansi-34}\fi,
+      commentstyle=\ifx\termcode@lang\termcode@textstr\else\color{ansi-32}\fi,
+      stringstyle=\ifx\termcode@lang\termcode@textstr\else\color{ansi-33}\fi,
+      identifierstyle=\color{term-fg},
+      breaklines=true,
+      breakatwhitespace=false,
+      columns=flexible,
+      basewidth=0.5em,
+      numbers=left,
+      numbersep=4pt,
+      numberstyle=\tiny\color{ansi-90},
+      tabsize=2,
+      frame=none,
+      upquote=true,
+      showspaces=false, showtabs=false, showstringspaces=false,
+      escapeinside={«}{»},
+    },
+    listing file={#3}
+  }
+  \endgroup
+  % Restore default text color to ensure subsequent content is not affected
+  \normalcolor
+}
+\makeatother
+
+% Alias for backward compatibility or preference
+\let\termcodefileinput\terminput
+
+\endinput

@@ -1,0 +1,10 @@
+(base) «\ac{32}\verb|max@qmobile|»:«\ac{34}\verb|~/Downloads/colorful_demo|»$ tree
+«\ac{34}\verb|.|»
+├── «\ac{31}\verb|archive.zip|»
+├── «\ac{34}\verb|directory_folder|»
+├── «\ac{32}\verb|executable_file|»
+├── «\ac{35}\verb|image.jpg|»
+├── normal_file.txt
+└── «\ac{36}\verb|symlink_file|» -> normal_file.txt
+
+1 directory, 5 files

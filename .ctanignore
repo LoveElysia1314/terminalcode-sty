@@ -1,0 +1,49 @@
+# .ctanignore - Files to exclude from CTAN archives
+# Standard CTAN ignore patterns
+
+# Version control
+.git*
+.gitignore
+
+# Build/development files
+*.pdf
+*.synctex.gz
+*.log
+*.aux
+*.out
+*.toc
+*.fls
+*.fdb_latexmk
+*.swp
+*.swo
+*~
+*.bak
+
+# Development & build scripts
+source/
+TEST_CHECKLIST.md
+MANIFEST.md
+QUICKSTART.md
+CTAN_SUBMISSION.md
+STATUS.md
+
+# CTAN metadata files (only needed for upload)
+.ctanignore
+CTAN_SUBMISSION.md
+
+# macOS cruft
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Temporary archives
+*.tds.zip
+terminalcode.tds.zip
+
+# OS files
+Thumbs.db
+

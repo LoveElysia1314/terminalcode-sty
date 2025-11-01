@@ -1,0 +1,12 @@
+# Enforce LF line endings for text files (CTAN prefers LF, not CRLF)
+* text=auto eol=lf
+
+# Explicit rules for common LaTeX/package assets
+*.tex text eol=lf
+*.sty text eol=lf
+*.dtx text eol=lf
+*.ins text eol=lf
+*.cfg text eol=lf
+*.md  text eol=lf
+*.txt text eol=lf
+*.cls text eol=lf

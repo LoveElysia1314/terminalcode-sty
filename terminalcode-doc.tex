@@ -1,0 +1,354 @@
+% =====================================================================
+% terminalcode Package - Official Documentation (Refactored)
+%
+% Purpose: Comprehensive user manual for CTAN submission.
+% This document merges the detailed information from the original
+% documentation with the practical examples from the quick-start guide.
+%
+% Compile with: xelatex or lualatex
+% File encoding: UTF-8
+% =====================================================================
+
+\documentclass[11pt,a4paper,english]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{ctex}
+\usepackage{multicol}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{xcolor}
+\usepackage{array}
+\usepackage[theme=dark]{terminalcode}
+
+\geometry{margin=1in}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    urlcolor=blue,
+    citecolor=blue
+}
+
+\title{\texttt{terminalcode} Package — Official Documentation}
+\author{LoveElysia1314 \\ \texttt{dr.zqr@outlook.com}}
+\date{November 2, 2025 — Version 0.9.0}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+The \texttt{terminalcode} package provides authentic-looking terminal-style code boxes for LaTeX documents. It features UTF-8 box-drawing characters, comprehensive ANSI 16-color support with dynamic dark and light themes, and seamless integration with external tools for capturing real terminal sessions. It is designed for technical documentation, tutorials, and any document requiring high-fidelity display of command-line interactions.
+\end{abstract}
+
+\begin{multicols}{2}
+
+\tableofcontents
+
+\end{multicols}
+
+\newpage
+
+% =====================================================================
+% SECTION 1: INTRODUCTION
+% =====================================================================
+\section{Introduction}
+
+\subsection{Key Features}
+\begin{itemize}
+  \item \textbf{Authentic Terminal Styling}: Renders code blocks with a genuine terminal appearance, including UTF-8 box-drawing frames and monospaced fonts.
+  \item \textbf{Dynamic Themes}: Switch between \texttt{dark} (default) and \texttt{light} themes at any point in the document.
+  \item \textbf{ANSI Color Support}: Full support for the 16 standard ANSI colors, allowing for faithful reproduction of terminal output.
+  \item \textbf{File Inclusion}: Display code and logs directly from external files using the \verb|\terminput| command.
+  \item \textbf{Syntax Highlighting}: Leverages the \texttt{listings} package for syntax highlighting across dozens of programming languages.
+  \item \textbf{Tool Integration}: Works seamlessly with tools like \texttt{cmdlog2tex} to embed real, captured terminal sessions.
+\end{itemize}
+
+\subsection{Requirements}
+\begin{itemize}
+  \item \textbf{Compiler}: XeLaTeX or LuaLaTeX (pdfLaTeX is \textbf{not} supported due to its limitations with Unicode and modern fonts).
+  \item \textbf{File Encoding}: Your \texttt{.tex} source file must be saved with UTF-8 encoding.
+\end{itemize}
+
+% =====================================================================
+% SECTION 2: QUICK START
+% =====================================================================
+\section{Quick Start}
+
+\subsection{Minimal Working Example}
+To get started, save the following code as \texttt{minimal-example.tex} and compile it with XeLaTeX or LuaLaTeX.
+
+\begin{verbatim}
+\documentclass{article}
+\usepackage{ctex}
+\usepackage[theme=dark]{terminalcode}
+
+\begin{document}
+
+\begin{termcode}[bash]{My First Terminal}
+$ echo "Hello, terminalcode!"
+Hello, terminalcode!
+\end{termcode}
+
+\end{document}
+\end{verbatim}
+
+\subsection{Showcase: Dark \& Light Themes}
+The package excels at displaying real terminal sessions. Here is the same colored output rendered in both themes to demonstrate the effect.
+
+\subsubsection{Dark Theme (Default)}
+\terminalcodetheme{dark}
+\terminput[text]{Dark: Terminal Session with Colors}{test_bash_demo.color.txt}
+
+\subsubsection{Light Theme}
+\terminalcodetheme{light}
+\terminput[text]{Light: Terminal Session with Colors}{test_bash_demo.color.txt}
+
+% Reset to dark for subsequent examples
+\terminalcodetheme{dark}
+
+% =====================================================================
+% SECTION 3: INSTALLATION
+% =====================================================================
+\section{Installation}
+
+\subsection{Local Installation (Recommended)}
+For a single project, simply place \texttt{terminalcode.sty} in the same directory as your main \texttt{.tex} file. LaTeX will find it automatically.
+
+\subsection{System-wide Installation}
+For a permanent installation, move \texttt{terminalcode.sty} to your TeX distribution's search path and refresh the file database.
+
+\subsubsection{TeX Live (All Platforms)}
+\begin{verbatim}
+mkdir -p $(kpsewhich -var-value TEXMFHOME)/tex/latex/terminalcode
+cp terminalcode.sty $(kpsewhich -var-value TEXMFHOME)/tex/latex/terminalcode/
+texhash
+\end{verbatim}
+
+\subsubsection{MiKTeX (Windows)}
+\begin{verbatim}
+copy terminalcode.sty "C:\Program Files\MiKTeX\tex\latex\terminalcode\"
+initexmf --update-fndb
+\end{verbatim}
+
+
+% =====================================================================
+% SECTION 4: CORE USAGE
+% =====================================================================
+\section{Core Usage}
+
+\subsection{The \texttt{termcode} Environment}
+Use the \texttt{termcode} environment to display inline code snippets.
+
+\subsubsection{Syntax}
+\begin{verbatim}
+\begin{termcode}[language]{title}
+  ... your code or output here ...
+\end{termcode}
+\end{verbatim}
+\begin{itemize}
+    \item \texttt{language} (optional, default: \texttt{text}): The programming language for syntax highlighting.
+    \item \texttt{title} (required): The title displayed in the terminal window's header.
+\end{itemize}
+
+\subsection{\texttt{\textbackslash terminput} Command}
+Use \verb|\terminput| to include content from an external file. This is the best way to manage long scripts or terminal logs.
+
+\subsubsection{Syntax}
+\begin{verbatim}
+\terminput[language]{title}{path/to/file}
+\end{verbatim}
+
+\subsection{Multi-Language Support}
+Syntax highlighting is supported for many languages.
+
+\begin{termcode}[bash]{Bash Script}
+#!/bin/bash
+for file in *.log; do
+    echo "Processing $file"
+    grep -c "ERROR" "$file"
+done
+\end{termcode}
+
+\begin{termcode}[python]{Python Script}
+def greet(name):
+    """A simple greeting function."""
+    print(f"Hello, {name}!")
+
+greet("World")
+\end{termcode}
+
+\begin{termcode}[c]{C Program}
+#include <stdio.h>
+
+int main() {
+    printf("Hello from C!\n");
+    return 0;
+}
+\end{termcode}
+
+% =====================================================================
+% SECTION 5: STYLING AND CUSTOMIZATION
+% =====================================================================
+\section{Styling and Customization}
+
+\subsection{Switching Themes}
+You can set the theme globally when loading the package or switch it dynamically within the document.
+
+\subsubsection{At Package Load Time}
+\begin{verbatim}
+% Use light theme throughout the document
+\usepackage[theme=light]{terminalcode}
+\end{verbatim}
+
+\subsubsection{At Runtime}
+Use \verb|\terminalcodetheme{<theme>}| or its alias \verb|\tctheme{<theme>}|.
+\begin{verbatim}
+\terminalcodetheme{light} % Switch to light theme
+\begin{termcode}[text]{Light Theme Example}
+This box uses the light theme.
+\end{termcode}
+
+\tctheme{dark} % Switch back to dark theme
+\begin{termcode}[text]{Dark Theme Example}
+And this one is dark again.
+\end{termcode}
+\end{verbatim}
+
+\subsection{Package Options}
+\begin{center}
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Option} & \textbf{Values} & \textbf{Default} \\
+\hline
+\texttt{theme} & \texttt{dark}, \texttt{light} & \texttt{dark} \\
+\texttt{monofont} & Font name & \texttt{DejaVu Sans Mono} \\
+\hline
+\end{tabular}
+\end{center}
+Example: \verb|\usepackage[theme=light, monofont=Courier New]{terminalcode}|
+
+% =====================================================================
+% SECTION 6: ADVANCED FEATURES
+% =====================================================================
+\section{Advanced Features}
+
+\subsection{Inputting the Escape Characters « and »}
+The symbols \texttt{«} (U+00AB, left-pointing double angle quotation mark) and \texttt{»} (U+00BB, right-pointing double angle quotation mark) are used to delimit LaTeX code within a \texttt{termcode} block. If you find them difficult to type, here are platform-specific methods:
+
+\subsubsection{Windows}
+\begin{itemize}
+    \item \textbf{Alt Code (requires Num Lock):}
+    \begin{itemize}
+        \item \texttt{«}: Hold \texttt{Alt}, type \texttt{0171}, release \texttt{Alt}
+        \item \texttt{»}: Hold \texttt{Alt}, type \texttt{0187}, release \texttt{Alt}
+    \end{itemize}
+    \item \textbf{Character Map:} Press \texttt{Win+R}, type \texttt{charmap}, search for ``U+00AB'' or ``guillemet'', copy and paste.
+    \item \textbf{Microsoft Pinyin (部分版本):} Try typing ``guillemet'', ``<<'', ``>>'', or ``双尖括号'', or add as a custom phrase in settings.
+    \item \textbf{Simplest Method:} Copy from this document or search ``« »'' online and paste.
+\end{itemize}
+
+\subsubsection{macOS}
+\begin{itemize}
+    \item \textbf{Default Shortcut (US Keyboard):}
+    \begin{itemize}
+        \item \texttt{«}: \texttt{Option + \textbackslash}
+        \item \texttt{»}: \texttt{Option + Shift + \textbackslash}
+    \end{itemize}
+    \item Note: Other keyboard layouts may differ. Check ``System Settings \textrightarrow{} Keyboard \textrightarrow{} Input Methods \textrightarrow{} Show Virtual Keyboard''.
+\end{itemize}
+
+\subsection{Manual ANSI Color Application}
+Within a code block, you can use \verb|«...»| to escape to LaTeX and apply colors manually with \verb|\ansicolor| or its alias \verb|\ac|.
+
+\begin{verbatim}
+\begin{termcode}[text]{Manual ANSI Colors}
+Normal text «\ac{31}»This is red«\ansireset» and back to normal.
+Bright colors: «\ac{92}»This is bright green«\ansireset».
+\end{termcode}
+\end{verbatim}
+
+The \verb|\ansicolor| command accepts a single color code argument (e.g., 31 for red, 92 for bright green). \verb|\ansireset| reverts the formatting to the theme's default.
+
+\subsubsection{Linux (e.g., Ubuntu)}
+\begin{itemize}
+    \item \textbf{Compose Key Method (if enabled):}
+    \begin{itemize}
+        \item \texttt{«}: \texttt{Compose + < + <}
+        \item \texttt{»}: \texttt{Compose + > + >}
+    \end{itemize}
+    \item \textbf{Unicode Input (X11):} Hold \texttt{Ctrl + Shift + U}, then:
+    \begin{itemize}
+        \item Type ``\texttt{00ab}'' \textrightarrow{} release \textrightarrow{} get \texttt{«}
+        \item Type ``\texttt{00bb}'' \textrightarrow{} release \textrightarrow{} get \texttt{»}
+    \end{itemize}
+\end{itemize}
+
+\noindent
+\textbf{Recommended:} The simplest method across all platforms is to copy these symbols from this document or search ``« »'' online.
+
+% =====================================================================
+% SECTION 7: INTEGRATION WITH CMDLOG2TEX
+% =====================================================================
+\section{Integration with \texttt{cmdlog2tex}}
+
+For truly authentic terminal logs, we recommend the companion tool \texttt{cmdlog2tex}, which converts captured terminal sessions into a \texttt{.tex} file compatible with this package.
+
+\subsection{Workflow}
+\begin{enumerate}
+    \item \textbf{Capture}: Record a terminal session using tools like \texttt{script} (Linux/macOS) or by saving commands to a file.
+    \item \textbf{Convert}: Use \texttt{cmdlog2tex} to process the log file, preserving all ANSI colors.
+    \item \textbf{Include}: Import the resulting file into your document with \verb|\terminput|.
+\end{enumerate}
+
+\subsection{Example}
+\begin{verbatim}
+# 1. On Linux, record a session
+script my_session.log
+$ ls --color=auto
+$ python --version
+$ exit
+
+# 2. Convert the log to a TeX file
+cmdlog2tex my_session.log > my_session.tex
+
+# 3. Include it in your document
+\terminput[text]{My Recorded Session}{my_session.tex}
+\end{verbatim}
+For detailed instructions, visit: \url{https://github.com/LoveElysia1314/cmdlog2tex}
+
+% =====================================================================
+% SECTION 8: FREQUENTLY ASKED QUESTIONS
+% =====================================================================
+\section{Frequently Asked Questions}
+
+\subsection*{Q: Why does compilation fail with an error about pdfLaTeX?}
+\textbf{A:} This package relies on features only available in modern TeX engines. You \textbf{must} compile your document with XeLaTeX or LuaLaTeX.
+
+\subsection*{Q: Why are the box-drawing characters or colors not showing correctly?}
+\textbf{A:} This is typically caused by one of two issues:
+\begin{itemize}
+    \item Your document is not being compiled with XeLaTeX/LuaLaTeX.
+    \item Your \texttt{.tex} file is not saved with UTF-8 encoding.
+\end{itemize}
+
+\subsection*{Q: How do I use a custom font?}
+\textbf{A:} Use the \texttt{monofont} package option: \verb|\usepackage[monofont=Inconsolata]{terminalcode}|. Ensure the font is installed on your system. If not found, the package will fall back to a default monospaced font.
+
+% =====================================================================
+% SECTION 9: LICENSE AND CONTRIBUTING
+% =====================================================================
+\section{License and Contributing}
+
+\subsection{License}
+This package is released under the \textbf{MIT License}. See the \texttt{LICENSE} file for complete details.
+
+\subsection{Contributing}
+Contributions, bug reports, and feature requests are welcome! Please visit the GitHub repository to participate.
+\begin{itemize}
+  \item \textbf{Issues}: \url{https://github.com/LoveElysia1314/terminalcode-sty/issues}
+  \item \textbf{Repository}: \url{https://github.com/LoveElysia1314/terminalcode-sty}
+\end{itemize}
+
+\end{document}

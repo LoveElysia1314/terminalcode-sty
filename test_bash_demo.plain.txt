@@ -1,0 +1,10 @@
+(base) max@qmobile:~/Downloads/colorful_demo$ tree
+.
+├── archive.zip
+├── directory_folder
+├── executable_file
+├── image.jpg
+├── normal_file.txt
+└── symlink_file -> normal_file.txt
+
+1 directory, 5 files
